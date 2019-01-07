@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        body {
+            background-color: #F6F6F6;
+        }
+        #main {
+            width: 400px;
+            height: 400px;
+            margin: 70px auto;
+            background: #F6F6F6;
+            position: relative;
+            border: 1px solid springgreen;
+        }
+        #ball {
+            width: 20px;
+            height: 20px;
+            background: url('./images/ball.png');
+            background-size: cover;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 777;
+        }
+        #board {
+            width: 60px;
+            height: 20px;
+            background: skyblue;
+            position: absolute;
+            border-radius: 10px;
+        }
+        #score {
+            position: absolute;
+            width: 100px;
+            line-height: 70px;
+            font-size: 30px;
+            top: 0;
+            right: -150px;
+            color: green;
+        }
+        #door {
+            position: absolute;
+            width: 60px;
+            height: 50px;
+        }
+        #btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            background: white linear-gradient(180deg, #7696c0 0%, #1f8be2 100%);
+            padding: 10px;
+            z-index: 999;
+            display: none;
+        }
+        #btn:hover {
+            background: white linear-gradient(0deg, #7696c0 0%, #1f8be2 100%)
+        }
+        #mask {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, .3);
+            z-index: 888;
+            display: none;
+        }
+    </style> 
+</head>
+<body>
+    <div id="main">
+        <div id="ball" style="left:0;top:0;"></div>
+        <div id="board" style="left:170px;top:380px;"></div>
+        <div id="score">0</div>
+        <img src="./images/goal.png" alt="" id="door" style="left:170px;top:-40px;">
+        <input type="button" value="再来一次" id="btn">
+        <div id="mask"></div>
+    </div>
+</body>
+
+
+
+<script>
+    var main = document.getElementById('main');
+    var ball = document.getElementById('ball');
+    var board = document.getElementById('board');
+    var score = document.getElementById('score');
+    var door = document.getElementById('door');
+    var btn = document.getElementById('btn');
+    var mask = document.getElementById('mask');
+
+    //设置小球步长
+    ball.stepX = 3;
+    ball.stepY = 4;
+
+
+    //控制小球运动轨迹
+    ball.run = function(){
+        var left = parseInt(this.style.left) + this.stepX;
+        var top = parseInt(this.style.top) + this.stepY;
+        this.style.left = left + 'px';
+        this.style.top = top + 'px';
+
+        this.check( left,top);
+    }
+
+
+    //检测碰撞实践
+    ball.check = function(left,top){
+
+        //左右碰撞转向  之所以用 或等于 符号，防止速度为3时。400/3不能除尽而出界
+        if (left <= 0 || left >= 380) {
+            this.turnX();
+        }
+
+        //球撞到上边转向
+        if (top <= 0) {
+            this.turnY();
+        }
+
+        //小球碰到下边时，未用挡板则输
+        if (top >= 380) {
+            clearInterval(clock);
+            // alert('您输了！！！点击确定再来一局！！！');
+            score.innerText = 0;
+            this.init();
+            btn.style.display = 'inline-block';
+            mask.style.display = 'block';
+        }
+
+
+        //碰撞挡板后Y转向
+        var board_left = parseInt(board.style.left);//挡板的左边距
+        var board_top  = parseInt(board.style.top);//挡板的上边距
+
+        if (left + 10 >= board_left && left+10 <= board_left+60 && top+20 >=board_top) {
+            this.turnY();
+        }
+        
+        // 得分判断
+        var door_left = parseInt(door.style.left);
+        var door_top = parseInt(door.style.top);
+        if (left + 10 >= door_left && left+10 <= door_left+60 && top+20 <= 30) {
+            var scores = parseInt(score.innerText);
+            scores += 1;
+            score.innerText = scores;
+            clearInterval(clock);
+            this.init();
+            clock = setInterval(function(){
+                ball.run();
+            },20);
+        }
+        
+    }
+
+    //控制小球转向
+    ball.turnX = function(){
+        this.stepX = -this.stepX;
+    }
+    ball.turnY= function(){
+        this.stepY= -this.stepY;
+    }
+
+
+   //设置小球移动时间间隔为20ms
+    var clock = setInterval(function(){
+        ball.run();
+    },20);
+
+
+    //移动挡板
+    // main.onmousemove=function(e){
+
+    //     //如果进入非main区，则直接返回，无变化。用于防止鼠标进入红色挡板内发生相对于挡板的移动。
+    //     if(e.srcElement !== main){
+    //         return;
+    //     }
+
+    //     //假设位置是长方形挡板的底边中点。
+    //     //距离左边 offsetX - 1/2L 
+    //     //距离顶部 offsetY - 1/2W 
+    //     board.style.left=e.offsetX-30+'px';
+    //     board.style.top=e.offsetY-20+'px';
+
+    // }
+
+    // 挡板步长
+    board.step = 2;
+
+    // 挡板移动
+    board.move = function(keyCode) {
+        var left = parseInt(this.style.left) + this.step;
+        if (left < 0 || left > 340) {
+            return;
+        }
+        this.style.left = left + 'px';
+    }
+
+    var timer;
+    document.onkeydown = function(e) {
+        if (!timer) {
+            if (e.keyCode == 65) {
+                board.step = -Math.abs(board.step);
+            }else if (e.keyCode == 68) {
+                board.step = Math.abs(board.step);
+            }else {
+                return;
+            }
+            timer = setInterval(() => {
+                board.move()
+            },10)
+        }
+    }
+    document.onkeyup = function() {
+        clearInterval(timer)
+        timer = null;
+    }
+
+    // restart
+    btn.onclick = function() {
+        btn.style.display = 'none';
+        mask.style.display = 'none';
+        clock = setInterval(function(){
+            ball.run();
+        },20);
+
+    };
+
+
+    ball.init = function(){
+        ball.style.left = 10+ 'px';
+        ball.style.top  = 20 + 'px';
+    }
+
+
+</script>
+</html> 
