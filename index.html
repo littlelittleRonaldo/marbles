@@ -36,7 +36,7 @@
             position: absolute;
             width: 100px;
             line-height: 70px;
-            font-size: 30px;
+            font-size: 36px;
             top: 0;
             right: -150px;
             color: green;
@@ -71,9 +71,17 @@
             z-index: 888;
             display: none;
         }
+        .tips {
+            color: green;
+            position: absolute;
+            left: 450px;
+            top: 170px;
+            width: 100px;
+        }
     </style> 
 </head>
 <body>
+    <audio src="./mp3/pes2008.mp3" autoplay loop controls></audio>
     <div id="main">
         <div id="ball" style="left:0;top:0;"></div>
         <div id="board" style="left:170px;top:380px;"></div>
@@ -81,6 +89,7 @@
         <img src="./images/goal.png" alt="" id="door" style="left:170px;top:-40px;">
         <input type="button" value="再来一次" id="btn">
         <div id="mask"></div>
+        <div class="tips">A键:挡板左移 D键:挡板右移</div>
     </div>
 </body>
 
